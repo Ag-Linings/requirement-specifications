@@ -1,0 +1,36 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: requirements-manager
+  labels:
+    app: requirements-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: requirements-manager
+  template:
+    metadata:
+      labels:
+        app: requirements-manager
+    spec:
+      containers:
+      - name: requirements-manager
+        image: ${DOCKER_REGISTRY}/requirements-manager:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secret
+              key: api-key
+              optional: true
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"

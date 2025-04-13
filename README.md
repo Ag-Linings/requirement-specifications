@@ -1,73 +1,98 @@
-# Welcome to your Lovable project
 
-## Project info
+# Requirements Manager
 
-**URL**: https://lovable.dev/projects/a0eac8fb-b890-4604-887f-9b0ef4183e77
+A microservice for the virtual Software Engineering Lab that refines natural language requirements into structured specification lists.
 
-## How can I edit this code?
+## Overview
 
-There are several ways of editing your application.
+This application accepts user input in natural language describing software requirements and uses an LLM to convert the raw input into a clean, categorized specification list.
 
-**Use Lovable**
+## Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a0eac8fb-b890-4604-887f-9b0ef4183e77) and start prompting.
+- Natural language input for system requirements
+- LLM-powered transformation to structured requirements
+- Categorization (Functional, Non-functional, Constraints, etc.)
+- Clean, responsive user interface
+- Kubernetes deployment ready
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+- **Frontend:** React, TypeScript, Tailwind CSS
+- **Backend:** Python, FastAPI
+- **LLM:** OpenAI API (with fallback mock processing)
+- **Infrastructure:** Docker, Kubernetes
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Local Development
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Frontend
 
-Follow these steps:
+```bash
+# Install dependencies
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Run the frontend in development mode
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Backend
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Navigate to backend directory
+cd backend
 
-**Use GitHub Codespaces**
+# Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Install dependencies
+pip install -r requirements.txt
 
-## What technologies are used for this project?
+# Run the backend
+python main.py
+```
 
-This project is built with:
+## Docker
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Build and run the application using Docker:
 
-## How can I deploy this project?
+```bash
+# Build the Docker image
+docker build -t requirements-manager .
 
-Simply open [Lovable](https://lovable.dev/projects/a0eac8fb-b890-4604-887f-9b0ef4183e77) and click on Share -> Publish.
+# Run the container
+docker run -p 8000:8000 -e OPENAI_API_KEY=your_api_key_here requirements-manager
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Kubernetes Deployment
 
-Yes, you can!
+1. Create the OpenAI API key secret (replace with your actual API key):
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+# Create the secret file from template
+export API_KEY=your_openai_api_key
+export BASE64_ENCODED_API_KEY=$(echo -n $API_KEY | base64)
+sed "s/\${BASE64_ENCODED_API_KEY}/$BASE64_ENCODED_API_KEY/g" kubernetes/secret.yaml.template > kubernetes/secret.yaml
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Apply the secret
+kubectl apply -f kubernetes/secret.yaml
+```
+
+2. Deploy the application:
+
+```bash
+# Apply Kubernetes manifests
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml
+kubectl apply -f kubernetes/ingress.yaml
+```
+
+The application will be accessible at `/requirements` path via your Kubernetes Ingress.
+
+## Endpoints
+
+- `GET /` - Health check endpoint
+- `POST /refine` - Refine natural language requirements
+
+## License
+
+MIT
