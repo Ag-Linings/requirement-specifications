@@ -38,7 +38,8 @@ const RequirementsInput = ({ onSubmit, isLoading }: RequirementsInputProps) => {
         <div className="flex justify-end">
           <Button 
             type="submit" 
-            className="w-full sm:w-auto" 
+            className="w-full sm:w-auto bg-[#a98467] text-white hover:bg-[#8a724f] disabled:bg-[#d1b493]" 
+
             disabled={isLoading || !input.trim()}
           >
             {isLoading ? (

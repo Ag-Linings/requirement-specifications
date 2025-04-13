@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import RequirementsInput from "@/components/RequirementsInput";
 import RequirementsList from "@/components/RequirementsList";
@@ -26,17 +25,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="w-full py-6 border-b">
+      <header className="w-full py-6 border-b bg-[#a98467]">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between">
             <div className="flex items-center mb-4 sm:mb-0">
               <div className="w-10 h-10 rounded-lg bg-gradient-req mr-3 flex items-center justify-center">
                 <span className="text-white font-bold">RM</span>
               </div>
-              <h1 className="text-2xl font-bold">Requirements Manager</h1>
+              <h1 className="text-2xl font-bold text-white">Requirements Manager</h1>
             </div>
-            <div className="text-sm text-muted-foreground">
-              Software Engineering Lab · Kubernetes Microservice
+            <div className="text-sm text-muted-foreground text-white">
+              Software Engineering Lab
             </div>
           </div>
         </div>

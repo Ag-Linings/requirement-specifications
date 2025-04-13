@@ -1,4 +1,4 @@
-#root {
+/* #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -39,4 +39,57 @@
 
 .read-the-docs {
   color: #888;
+} */
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: #f0ead2; /* Light Cream */
+  font-family: 'Georgia', serif;
+  color: #6c584c; /* Earthy Brown text */
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #adc178); /* Fresh Green glow */
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #dde5b6); /* Sagey Light Green glow */
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+  background-color: #dde5b6; /* Sagey Light Green */
+  border: 2px solid #adc178; /* Fresh Green border */
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(173, 193, 120, 0.3); /* Soft Fresh Green shadow */
+}
+
+.read-the-docs {
+  color: #a98467; /* Muted Mocha text */
+  font-style: italic;
 }

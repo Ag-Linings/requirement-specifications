@@ -43,8 +43,8 @@ const RequirementsList = ({ requirements, summary }: RequirementsListProps) => {
       
       {summary && (
         <div className="mb-6 p-4 bg-accent rounded-md">
-          <h3 className="font-medium mb-2">Summary</h3>
-          <p className="text-sm text-muted-foreground">{summary}</p>
+          <h3 className="font-medium mb-2 text-white ">Summary</h3>
+          <p className="text-sm text-muted-foreground text-white ">{summary}</p>
         </div>
       )}
       
