@@ -61,39 +61,21 @@ export async function mockRefineRequirements(rawInput: string): Promise<Requirem
         "performance"
       ];
 
-      // Create "refined" requirements by splitting the input into lines
-      const lines = rawInput
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0);
+      // Create "refined" requirements by splitting the input into sentences
+      const sentences = rawInput
+        .split(/[.!?]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 10);
 
-      const requirements: Requirement[] = lines.map((line, index) => {
-        // Try to determine category based on keywords
-        let category: RequirementCategory = "performance";
-        
-        if (line.includes("authenticate") || line.includes("encrypt") || line.includes("security")) {
-          category = "security";
-        } else if (line.includes("display") || line.includes("render") || line.includes("UI")) {
-          category = "interface";
-        } else if (line.includes("store") || line.includes("compress")) {
-          category = "non-functional";
-        } else if (line.includes("validate") || line.includes("search")) {
-          category = "functional";
-        } else if (line.includes("instances") || line.includes("limit")) {
-          category = "constraints";
-        } else if (line.includes("business") || line.includes("organization")) {
-          category = "business";
-        }
-        
-        return {
-          id: `REQ-${index + 1}`,
-          description: line,
-          category: category,
-        };
-      });
+      const requirements: Requirement[] = sentences.map((sentence, index) => ({
+        id: `REQ-${index + 1}`,
+        description: sentence,
+        category: categories[Math.floor(Math.random() * categories.length)],
+      }));
 
       resolve({
         requirements,
+        summary: "This system aims to provide a requirements management solution with clear categorization of different requirement types."
       });
     }, 1500);
   });

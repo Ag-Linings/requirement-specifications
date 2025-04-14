@@ -63,6 +63,7 @@ async def process_requirements_with_llm(input_text: str) -> Dict:
        - business (organizational goals and needs)
        - security (data and system protection)
        - performance (speed, efficiency, scalability)
+    3. Provide a brief summary of the system described by these requirements
     
     Format your response as valid JSON with this structure:
     {
@@ -72,10 +73,9 @@ async def process_requirements_with_llm(input_text: str) -> Dict:
           "description": "The system shall...",
           "category": "functional"
         }
-      ]
+      ],
+      "summary": "A brief summary of the system's purpose and key features."
     }
-    
-    DO NOT include a summary field in your response.
     """
     
     try:
@@ -100,59 +100,34 @@ async def process_requirements_with_llm(input_text: str) -> Dict:
 def process_requirements_mock(input_text: str) -> Dict:
     """
     Mock processing function when OpenAI API is not available.
-    Extracts lines and assigns categories based on content.
+    Extracts sentences and assigns random categories.
     """
     import random
     
-    # Split the input text by newlines to get individual requirements
-    requirements_lines = [line.strip() for line in input_text.split('\n') if line.strip()]
+    # Simple sentence splitting
+    sentences = [s.strip() for s in input_text.split('.') if len(s.strip()) > 10]
+    
+    categories = [
+        "functional", "non-functional", "constraints", 
+        "interface", "business", "security", "performance"
+    ]
     
     requirements = []
-    categories = {
-        "UI Performance": "interface",
-        "initial page": "performance",
-        "user input": "performance",
-        "render": "performance",
-        "display": "interface",
-        "database": "performance",
-        "data": "performance",
-        "search": "functional",
-        "API": "interface",
-        "cache": "performance",
-        "encrypt": "security",
-        "compress": "non-functional",
-        "validate": "functional",
-        "authenticate": "security",
-        "brute-force": "security",
-        "log": "non-functional",
-        "factor authentication": "security",
-        "concurrent": "performance",
-        "scale": "performance",
-        "store": "non-functional",
-        "instances": "constraints",
-        "peak load": "performance"
-    }
     
-    for i, line in enumerate(requirements_lines):
+    for i, sentence in enumerate(sentences):
         req_id = f"REQ-{i+1}"
-        
-        # Try to determine category based on keywords
-        category = "performance"  # Default category
-        for keyword, cat in categories.items():
-            if keyword.lower() in line.lower():
-                category = cat
-                break
-        
+        category = random.choice(categories)
         requirements.append(
             Requirement(
                 id=req_id,
-                description=line,
+                description=sentence,
                 category=category
             )
         )
     
     return {
-        "requirements": requirements
+        "requirements": requirements,
+        "summary": "This system aims to provide a requirements management solution."
     }
 
 @app.get("/")
