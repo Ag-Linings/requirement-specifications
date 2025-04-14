@@ -8,7 +8,7 @@ interface RequirementsListProps {
   summary?: string;
 }
 
-const RequirementsList = ({ requirements, summary }: RequirementsListProps) => {
+const RequirementsList = ({ requirements }: RequirementsListProps) => {
   const getCategoryColor = (category: RequirementCategory): string => {
     const colors: Record<RequirementCategory, string> = {
       functional: "bg-req-functional",
@@ -40,13 +40,6 @@ const RequirementsList = ({ requirements, summary }: RequirementsListProps) => {
   return (
     <Card className="p-6 h-full flex flex-col">
       <h2 className="text-xl font-semibold mb-4">Refined Requirements</h2>
-      
-      {summary && (
-        <div className="mb-6 p-4 bg-accent rounded-md">
-          <h3 className="font-medium mb-2 text-white ">Summary</h3>
-          <p className="text-sm text-muted-foreground text-white ">{summary}</p>
-        </div>
-      )}
       
       {requirements.length === 0 ? (
         <div className="flex-grow flex items-center justify-center">

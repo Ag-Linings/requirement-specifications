@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import RequirementsInput from "@/components/RequirementsInput";
 import RequirementsList from "@/components/RequirementsList";
@@ -15,7 +16,10 @@ const Index = () => {
       // In production, you would use the real API:
       // const data = await refineRequirements(input);
       const data = await mockRefineRequirements(input);
-      setRequirementsData(data);
+      setRequirementsData({
+        requirements: data.requirements,
+        // Omit summary as requested
+      });
     } catch (error) {
       console.error("Error processing requirements:", error);
     } finally {
@@ -52,7 +56,6 @@ const Index = () => {
           <div className="h-full">
             <RequirementsList 
               requirements={requirementsData.requirements} 
-              summary={requirementsData.summary}
             />
           </div>
         </div>
