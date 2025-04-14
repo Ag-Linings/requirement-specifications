@@ -24,17 +24,14 @@ export interface RequirementsResponse {
 
 const API_URL = "/api/refine";
 
-export async function refineRequirements(rawInput: string, apiKey?: string): Promise<RequirementsResponse> {
+export async function refineRequirements(rawInput: string): Promise<RequirementsResponse> {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ 
-        input: rawInput,
-        api_key: apiKey 
-      }),
+      body: JSON.stringify({ input: rawInput }),
     });
 
     if (!response.ok) {
@@ -50,17 +47,7 @@ export async function refineRequirements(rawInput: string, apiKey?: string): Pro
 }
 
 // For development and testing without a backend
-export async function mockRefineRequirements(rawInput: string, apiKey?: string): Promise<RequirementsResponse> {
-  // If we have an API key, try to use the real API first
-  if (apiKey && apiKey.trim()) {
-    try {
-      return await refineRequirements(rawInput, apiKey);
-    } catch (error) {
-      console.error("API failed, falling back to mock:", error);
-      // Fall back to mock if the API fails
-    }
-  }
-
+export async function mockRefineRequirements(rawInput: string): Promise<RequirementsResponse> {
   return new Promise((resolve) => {
     // Simulate API call delay
     setTimeout(() => {
@@ -86,22 +73,9 @@ export async function mockRefineRequirements(rawInput: string, apiKey?: string):
         category: categories[Math.floor(Math.random() * categories.length)],
       }));
 
-      // Try to extract a better summary by looking for key entities
-      const entityPattern = /\b[A-Z][a-z]+s?\b/g;
-      const potentialEntities = rawInput.match(entityPattern) || [];
-      const entities = potentialEntities
-        .filter(e => !["The", "A", "An", "This", "That", "These", "Those", "It"].includes(e))
-        .slice(0, 5);
-
-      let summary = "This system aims to provide a requirements management solution with clear categorization of different requirement types.";
-      
-      if (entities.length > 0) {
-        summary = `A system for managing ${entities.join(", ")}.`;
-      }
-
       resolve({
         requirements,
-        summary
+        summary: "This system aims to provide a requirements management solution with clear categorization of different requirement types."
       });
     }, 1500);
   });
