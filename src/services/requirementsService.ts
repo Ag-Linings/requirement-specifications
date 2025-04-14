@@ -86,9 +86,22 @@ export async function mockRefineRequirements(rawInput: string, apiKey?: string):
         category: categories[Math.floor(Math.random() * categories.length)],
       }));
 
+      // Try to extract a better summary by looking for key entities
+      const entityPattern = /\b[A-Z][a-z]+s?\b/g;
+      const potentialEntities = rawInput.match(entityPattern) || [];
+      const entities = potentialEntities
+        .filter(e => !["The", "A", "An", "This", "That", "These", "Those", "It"].includes(e))
+        .slice(0, 5);
+
+      let summary = "This system aims to provide a requirements management solution with clear categorization of different requirement types.";
+      
+      if (entities.length > 0) {
+        summary = `A system for managing ${entities.join(", ")}.`;
+      }
+
       resolve({
         requirements,
-        summary: rawInput
+        summary
       });
     }, 1500);
   });
