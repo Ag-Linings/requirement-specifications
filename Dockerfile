@@ -1,4 +1,3 @@
-
 # Build stage for React frontend
 FROM node:20-alpine as frontend-build
 
