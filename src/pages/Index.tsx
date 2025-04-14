@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import RequirementsInput from "@/components/RequirementsInput";
 import RequirementsList from "@/components/RequirementsList";
-import { mockRefineRequirements, RequirementsResponse } from "@/services/requirementsService";
+import { refineRequirements, mockRefineRequirements, RequirementsResponse } from "@/services/requirementsService";
+import { toast } from "sonner";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,15 +11,26 @@ const Index = () => {
     requirements: [],
   });
 
-  const handleSubmitRequirements = async (input: string) => {
+  const handleSubmitRequirements = async (input: string, apiKey?: string) => {
     setIsLoading(true);
     try {
-      // In production, you would use the real API:
-      // const data = await refineRequirements(input);
-      const data = await mockRefineRequirements(input);
+      // Try to use the real API first
+      const data = await refineRequirements(input, apiKey);
       setRequirementsData(data);
+      if (apiKey) {
+        toast.success("Requirements processed with Perplexity AI");
+      }
     } catch (error) {
-      console.error("Error processing requirements:", error);
+      console.error("Error with primary API, falling back to mock:", error);
+      try {
+        // Fallback to mock if the real API fails
+        const mockData = await mockRefineRequirements(input);
+        setRequirementsData(mockData);
+        toast.info("Using fallback processing method");
+      } catch (mockError) {
+        console.error("Error processing requirements:", mockError);
+        toast.error("Failed to process requirements. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
