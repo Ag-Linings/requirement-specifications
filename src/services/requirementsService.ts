@@ -22,7 +22,7 @@ export interface RequirementsResponse {
   summary?: string;
 }
 
-const API_URL = "/api/refine";
+const API_URL = "http://localhost:8000/refine";
 
 export async function refineRequirements(rawInput: string): Promise<RequirementsResponse> {
   try {
@@ -31,7 +31,10 @@ export async function refineRequirements(rawInput: string): Promise<Requirements
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ input: rawInput }),
+      body: JSON.stringify({ 
+        input: rawInput,
+        user_id: "default-user" // Add a default user ID
+      }),
     });
 
     if (!response.ok) {

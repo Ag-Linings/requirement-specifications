@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import RequirementsInput from "@/components/RequirementsInput";
 import RequirementsList from "@/components/RequirementsList";
-import { mockRefineRequirements, RequirementsResponse } from "@/services/requirementsService";
+import { refineRequirements, RequirementsResponse } from "@/services/requirementsService";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,9 +13,8 @@ const Index = () => {
   const handleSubmitRequirements = async (input: string) => {
     setIsLoading(true);
     try {
-      // In production, you would use the real API:
-      // const data = await refineRequirements(input);
-      const data = await mockRefineRequirements(input);
+      // Use the real API endpoint instead of the mock function
+      const data = await refineRequirements(input);
       setRequirementsData(data);
     } catch (error) {
       console.error("Error processing requirements:", error);
