@@ -1,3 +1,4 @@
+
 import os
 import uuid
 from typing import Dict, List, Optional
@@ -16,10 +17,10 @@ if openai_api_key:
     openai.api_key = openai_api_key
 
 # MySQL database configuration
-MYSQL_HOST = "localhost"
-MYSQL_USER = "root"
-MYSQL_PASSWORD = "****"
-MYSQL_DB = "requirements_db"
+MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_USER = os.getenv("MYSQL_USER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "****")
+MYSQL_DB = os.getenv("MYSQL_DB", "requirements_db")
 
 # ------------------ FASTAPI SETUP ------------------ #
 
@@ -49,10 +50,49 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         raise HTTPException(status_code=500, detail="Database connection error")
 
+# Initialize the database and tables if they don't exist
+def init_db():
+    try:
+        # Create a connection without specifying database
+        temp_conn = mysql.connector.connect(
+            host=MYSQL_HOST,
+            user=MYSQL_USER,
+            password=MYSQL_PASSWORD
+        )
+        cursor = temp_conn.cursor()
+        
+        # Create database if it doesn't exist
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {MYSQL_DB}")
+        cursor.execute(f"USE {MYSQL_DB}")
+        
+        # Create requirements table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS requirements (
+            id VARCHAR(36) PRIMARY KEY,
+            description TEXT NOT NULL,
+            category VARCHAR(50) NOT NULL,
+            user_id VARCHAR(100)
+        )
+        """)
+        
+        temp_conn.commit()
+        cursor.close()
+        temp_conn.close()
+        print("Database initialized successfully")
+    except Error as e:
+        print(f"Error initializing database: {e}")
+        raise HTTPException(status_code=500, detail="Database initialization error")
+
+# Call init_db at startup
+@app.on_event("startup")
+async def startup_event():
+    init_db()
+
 # ------------------ Pydantic Schemas ------------------ #
 
 class RequirementInput(BaseModel):
     input: str
+    user_id: Optional[str] = None
 
 class Requirement(BaseModel):
     id: str
@@ -85,14 +125,18 @@ async def refine_requirements(req_input: RequirementInput) -> Dict:
         cursor = conn.cursor()
 
         for req in result["requirements"]:
-            # Generate a unique ID for the requirement (e.g., UUID or incremental)
+            # Generate a unique ID for the requirement
             req_id = str(uuid.uuid4())
 
             # Insert the requirement into the database
             cursor.execute(
-                "INSERT INTO requirements (id, name, description, category) VALUES (%s, %s, %s, %s)",
-                (req_id, req["name"], req["description"], req["category"])
+                "INSERT INTO requirements (id, description, category, user_id) VALUES (%s, %s, %s, %s)",
+                (req_id, req["description"], req["category"], req_input.user_id)
             )
+            
+            # Update the ID in the result to match what's stored in the database
+            req["id"] = req_id
+            
             print(f"Adding requirement: {req}")
 
         conn.commit()  # Commit the transaction
@@ -102,8 +146,32 @@ async def refine_requirements(req_input: RequirementInput) -> Dict:
         print("Database commit successful.")
         return result
     except Exception as e:
+        print(f"Error processing requirements: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing requirements: {str(e)}")
 
+# ------------------ Database Operations ------------------ #
+
+@app.get("/requirements", response_model=RequirementsResponse)
+async def get_requirements(user_id: Optional[str] = None):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        if user_id:
+            cursor.execute(
+                "SELECT id, description, category FROM requirements WHERE user_id = %s",
+                (user_id,)
+            )
+        else:
+            cursor.execute("SELECT id, description, category FROM requirements")
+
+        requirements = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        return {"requirements": requirements}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving requirements: {str(e)}")
 
 # ------------------ OpenAI LLM Function ------------------ #
 
