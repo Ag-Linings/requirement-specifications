@@ -19,7 +19,7 @@ if openai_api_key:
 # MySQL database configuration
 MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
 MYSQL_USER = os.getenv("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "****")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "iloveroha.123")
 MYSQL_DB = os.getenv("MYSQL_DB", "requirements_db")
 
 # ------------------ FASTAPI SETUP ------------------ #
