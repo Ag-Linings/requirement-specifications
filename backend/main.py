@@ -1,15 +1,13 @@
-
 import os
 import uuid
 from typing import Dict, List, Optional
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import openai
 import mysql.connector
 from dataclasses import dataclass
 from mysql.connector import Error
-
 
 # Set up OpenAI API
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -50,40 +48,41 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         raise HTTPException(status_code=500, detail="Database connection error")
 
-# Initialize the database and tables if they don't exist
 def init_db():
     try:
-        # Create a connection without specifying database
-        temp_conn = mysql.connector.connect(
+        server_conn = mysql.connector.connect(
             host=MYSQL_HOST,
             user=MYSQL_USER,
             password=MYSQL_PASSWORD
         )
-        cursor = temp_conn.cursor()
-        
-        # Create database if it doesn't exist
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {MYSQL_DB}")
-        cursor.execute(f"USE {MYSQL_DB}")
-        
-        # Create requirements table
-        cursor.execute("""
+        server_cursor = server_conn.cursor()
+        server_cursor.execute(f"CREATE DATABASE IF NOT EXISTS {MYSQL_DB}")
+        server_cursor.close()
+        server_conn.close()
+
+        db_conn = mysql.connector.connect(
+            host=MYSQL_HOST,
+            user=MYSQL_USER,
+            password=MYSQL_PASSWORD,
+            database=MYSQL_DB
+        )
+        db_cursor = db_conn.cursor()
+        db_cursor.execute("""
         CREATE TABLE IF NOT EXISTS requirements (
-            id VARCHAR(36) PRIMARY KEY,
+            id VARCHAR(100) PRIMARY KEY,
             description TEXT NOT NULL,
             category VARCHAR(50) NOT NULL,
             user_id VARCHAR(100)
         )
         """)
-        
-        temp_conn.commit()
-        cursor.close()
-        temp_conn.close()
-        print("Database initialized successfully")
+        db_conn.commit()
+        db_cursor.close()
+        db_conn.close()
+        print("Database and table initialized successfully")
     except Error as e:
         print(f"Error initializing database: {e}")
         raise HTTPException(status_code=500, detail="Database initialization error")
 
-# Call init_db at startup
 @app.on_event("startup")
 async def startup_event():
     init_db()
@@ -92,7 +91,7 @@ async def startup_event():
 
 class RequirementInput(BaseModel):
     input: str
-    user_id: Optional[str] = None
+    user_id: str  # Now mandatory
 
 class Requirement(BaseModel):
     id: str
@@ -111,35 +110,31 @@ async def refine_requirements(req_input: RequirementInput) -> Dict:
         raise HTTPException(status_code=400, detail="Input text cannot be empty")
 
     try:
-        # Process the requirements either via mock or OpenAI
         if not openai_api_key:
             result = process_requirements_mock(req_input.input)
         else:
             result = await process_requirements_with_llm(req_input.input)
 
-        # Logging the result before saving to the database
         print(f"Received requirements to save: {result['requirements']}")
 
-        # Save to MySQL
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        for req in result["requirements"]:
-            # Generate a unique ID for the requirement
-            req_id = str(uuid.uuid4())
+        # Count existing requirements for the user
+        cursor.execute("SELECT COUNT(*) FROM requirements WHERE user_id = %s", (req_input.user_id,))
+        current_count = cursor.fetchone()[0]
 
-            # Insert the requirement into the database
+        for i, req in enumerate(result["requirements"], start=1):
+            req_id = f"{req_input.user_id}_{current_count + i}"
+
             cursor.execute(
                 "INSERT INTO requirements (id, description, category, user_id) VALUES (%s, %s, %s, %s)",
                 (req_id, req["description"], req["category"], req_input.user_id)
             )
-            
-            # Update the ID in the result to match what's stored in the database
             req["id"] = req_id
-            
             print(f"Adding requirement: {req}")
 
-        conn.commit()  # Commit the transaction
+        conn.commit()
         cursor.close()
         conn.close()
 
@@ -149,7 +144,7 @@ async def refine_requirements(req_input: RequirementInput) -> Dict:
         print(f"Error processing requirements: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing requirements: {str(e)}")
 
-# ------------------ Database Operations ------------------ #
+# ------------------ Get Requirements ------------------ #
 
 @app.get("/requirements", response_model=RequirementsResponse)
 async def get_requirements(user_id: Optional[str] = None):
@@ -206,7 +201,7 @@ async def process_requirements_with_llm(input_text: str) -> Dict:
     import json
     return json.loads(result)
 
-# ------------------ Fallback (Mock) ------------------ #
+# ------------------ Fallback Mock ------------------ #
 
 @dataclass
 class MockRequirement:
@@ -246,6 +241,8 @@ def process_requirements_mock(input_text: str) -> Dict:
         "requirements": [r.__dict__ for r in requirements],
         "summary": "Mock summary of extracted requirements."
     }
+
+# ------------------ Root Endpoint ------------------ #
 
 @app.get("/")
 async def root():
