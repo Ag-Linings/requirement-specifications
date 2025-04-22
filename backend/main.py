@@ -211,23 +211,37 @@ class MockRequirement:
 
 def categorize_sentence(sentence: str) -> str:
     sentence_lower = sentence.lower()
-    if any(k in sentence_lower for k in ["must", "should", "shall", "allow", "support"]):
+    
+    # Functional Requirement: Checks for verbs and system actions
+    if any(k in sentence_lower for k in ["must", "should", "shall", "allow", "support", "perform", "manage"]):
         return "functional"
-    elif any(k in sentence_lower for k in ["response time", "throughput", "latency"]):
+    
+    # Performance: Checks for performance-related terms
+    elif any(k in sentence_lower for k in ["response time", "throughput", "latency", "speed", "scalability"]):
         return "performance"
-    elif any(k in sentence_lower for k in ["encrypt", "authentication", "authorization", "secure"]):
+    
+    # Security: Checks for security-related terms
+    elif any(k in sentence_lower for k in ["encrypt", "authentication", "authorization", "secure", "privacy"]):
         return "security"
-    elif any(k in sentence_lower for k in ["interface", "api", "ui", "ux"]):
+    
+    # Interface: Checks for UI, UX, and API-related terms
+    elif any(k in sentence_lower for k in ["interface", "api", "ui", "ux", "user interface", "integration"]):
         return "interface"
-    elif any(k in sentence_lower for k in ["legal", "budget", "timeframe", "deadline"]):
+    
+    # Constraints: Checks for time, legal, or budget constraints
+    elif any(k in sentence_lower for k in ["legal", "budget", "timeframe", "deadline", "limit", "constraint"]):
         return "constraints"
-    elif any(k in sentence_lower for k in ["business", "stakeholder", "goal", "objective"]):
+    
+    # Business: Business goals and stakeholder-related terms
+    elif any(k in sentence_lower for k in ["business", "stakeholder", "goal", "objective", "profit", "target"]):
         return "business"
-    elif any(k in sentence_lower for k in ["uptime", "availability", "reliability"]):
+    
+    # Non-functional: Availability, reliability, and general system qualities
+    elif any(k in sentence_lower for k in ["uptime", "availability", "reliability", "quality", "maintenance"]):
         return "non-functional"
-    else:
-        return "functional"
-
+    
+    # Default to functional if no specific category is found
+    return "functional"
 def process_requirements_mock(input_text: str) -> Dict:
     sentences = [s.strip() for s in input_text.split('.') if len(s.strip()) > 10]
     requirements: List[MockRequirement] = []
