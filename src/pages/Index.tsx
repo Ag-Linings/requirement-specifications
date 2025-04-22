@@ -10,11 +10,32 @@ const Index = () => {
     requirements: [],
   });
 
-  const handleSubmitRequirements = async (input: string) => {
+  // const handleSubmitRequirements = async (input: string) => {
+  //   setIsLoading(true);
+  //   try {
+  //     // Use the real API endpoint instead of the mock function
+  //     const data = await refineRequirements(input);
+  //     setRequirementsData(data);
+  //   } catch (error) {
+  //     console.error("Error processing requirements:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+    const handleSubmitRequirements = async (input: string) => {
     setIsLoading(true);
     try {
       // Use the real API endpoint instead of the mock function
       const data = await refineRequirements(input);
+      
+      // Check for uncategorized requirements and notify user
+      data.requirements.forEach((req) => {
+        if (req.category === "uncategorized") {
+          Sonner.error("These terms should be categorized properly. Please check the requirement input.");
+        }
+      });
+
       setRequirementsData(data);
     } catch (error) {
       console.error("Error processing requirements:", error);
@@ -22,6 +43,7 @@ const Index = () => {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex flex-col">
