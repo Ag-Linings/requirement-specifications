@@ -108,6 +108,10 @@ class RequirementsResponse(BaseModel):
 async def refine_requirements(req_input: RequirementInput) -> Dict:
     if not req_input.input.strip():
         raise HTTPException(status_code=400, detail="Input text cannot be empty")
+        
+    if not validate_input(req_input.input):
+        raise HTTPException(status_code=400, detail="Input text is too short or invalid")
+
 
     try:
         if not openai_api_key:
@@ -240,8 +244,11 @@ def categorize_sentence(sentence: str) -> str:
     elif any(k in sentence_lower for k in ["uptime", "availability", "reliability", "quality", "maintenance"]):
         return "non-functional"
     
-    # Default to functional if no specific category is found
-    return "functional"
+    if category is None:
+        return "uncategorized"
+        
+    return category
+    
 def process_requirements_mock(input_text: str) -> Dict:
     sentences = [s.strip() for s in input_text.split('.') if len(s.strip()) > 10]
     requirements: List[MockRequirement] = []
@@ -252,9 +259,28 @@ def process_requirements_mock(input_text: str) -> Dict:
         requirements.append(MockRequirement(id=req_id, description=sentence, category=category))
 
     return {
-        "requirements": [r.__dict__ for r in requirements],
-        "summary": "Mock summary of extracted requirements."
-    }
+    "requirements": requirements,
+    "summary": 'Functional Requirements: These describe actions the system must perform. For instance, "The system shall encrypt all sensitive data" defines a critical functionality of the system.
+
+Non-Functional Requirements: These describe the system's overall characteristics, such as "The system should have a response time of less than 2 seconds." These are usually performance-related.
+
+Business Requirements: These relate to the business goals and objectives, like "The system must support multi-currency transactions to meet global business needs."
+
+Security Requirements: Security requirements include features like "The system shall authenticate all users before granting access."
+
+Interface Requirements: These requirements deal with the interaction between the system and other systems, e.g., "The system should provide an API for third-party integrations."
+
+Constraints: These define limits within which the system must operate, such as "The system must be developed within 6 months."',
+    "uncategorized_message": 'Some of your requirements were uncategorized. Use words like: "must", "should", "throughput", "latency", "legal", "budget", "timeframe", "reliability", "quality", "maintenance" '
+}
+
+def validate_input(input_text: str) -> bool:
+    if not input_text.strip():  # Check if the input is empty
+        return False
+    sentences = [s.strip() for s in input_text.split('.') if len(s.strip()) > 10]
+    if len(sentences) < 1:
+        return False
+    return True
 
 # ------------------ Root Endpoint ------------------ #
 
