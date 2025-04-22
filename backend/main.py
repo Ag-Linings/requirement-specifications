@@ -260,7 +260,7 @@ def process_requirements_mock(input_text: str) -> Dict:
 
     return {
     "requirements": requirements,
-    "summary": 'Functional Requirements: These describe actions the system must perform. For instance, "The system shall encrypt all sensitive data" defines a critical functionality of the system.
+    "summary": '''Functional Requirements: These describe actions the system must perform. For instance, "The system shall encrypt all sensitive data" defines a critical functionality of the system.
 
 Non-Functional Requirements: These describe the system's overall characteristics, such as "The system should have a response time of less than 2 seconds." These are usually performance-related.
 
@@ -270,7 +270,7 @@ Security Requirements: Security requirements include features like "The system s
 
 Interface Requirements: These requirements deal with the interaction between the system and other systems, e.g., "The system should provide an API for third-party integrations."
 
-Constraints: These define limits within which the system must operate, such as "The system must be developed within 6 months."',
+Constraints: These define limits within which the system must operate, such as "The system must be developed within 6 months."''',
     "uncategorized_message": 'Some of your requirements were uncategorized. Use words like: "must", "should", "throughput", "latency", "legal", "budget", "timeframe", "reliability", "quality", "maintenance" '
 }
 
